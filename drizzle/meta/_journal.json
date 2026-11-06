@@ -8,6 +8,13 @@
       "when": 1778713585886,
       "tag": "0000_initial_auth_and_schedule",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1793929873805,
+      "tag": "0001_hub_user_ids",
+      "breakpoints": true
     }
   ]
 }

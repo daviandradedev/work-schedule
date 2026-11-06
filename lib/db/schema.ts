@@ -73,9 +73,7 @@ export const groups = workScheduleSchema.table(
     id: text("id").primaryKey(),
     name: text("name").notNull(),
     color: text("color").notNull(),
-    userId: text("user_id")
-      .notNull()
-      .references(() => authUsers.id, { onDelete: "cascade" }),
+    userId: text("user_id").notNull(),
     createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
   },
@@ -90,9 +88,7 @@ export const employees = workScheduleSchema.table(
     groupId: text("group_id")
       .notNull()
       .references(() => groups.id, { onDelete: "cascade" }),
-    userId: text("user_id")
-      .notNull()
-      .references(() => authUsers.id, { onDelete: "cascade" }),
+    userId: text("user_id").notNull(),
     createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
   },
@@ -110,9 +106,7 @@ export const holidays = workScheduleSchema.table(
     name: text("name").notNull(),
     isNacional: boolean("is_nacional").default(false).notNull(),
     tag: text("tag"),
-    userId: text("user_id")
-      .notNull()
-      .references(() => authUsers.id, { onDelete: "cascade" }),
+    userId: text("user_id").notNull(),
     createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
   },

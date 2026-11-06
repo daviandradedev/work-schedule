@@ -6,7 +6,7 @@ import { useTheme } from "@/lib/hooks/use-theme";
 import { Sidebar } from "@/features/management/components/sidebar";
 import { useLanguage } from "@/lib/contexts/language-context";
 import { Calendar } from "@/features/schedule/components/calendar";
-import { AuthForm } from "@/features/auth/components/auth-form";
+import { SignInCard } from "@/features/auth/components/sign-in-card";
 import { WelcomeScreen } from "@/features/schedule/components/welcome-screen";
 import { WizardModal } from "@/features/schedule/components/wizard-modal";
 import { authClient } from "@/lib/auth-client";
@@ -68,7 +68,7 @@ export default function Page() {
 
         <div className="absolute top-0 left-0 w-96 h-96 bg-blue-500/10 rounded-full blur-[100px] pointer-events-none" />
 
-        <AuthForm />
+        <SignInCard />
       </div>
     );
   }

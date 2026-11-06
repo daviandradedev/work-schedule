@@ -103,7 +103,11 @@ export function Sidebar({ state, setters, theme, toggleTheme }: any) {
 
         <div className="p-4 border-t border-zinc-100 dark:border-zinc-800/50 flex flex-col gap-4 shrink-0 bg-white dark:bg-zinc-950">
           {userEmail && (
-            <div className="flex items-center gap-3 px-3 py-2 bg-zinc-50 dark:bg-zinc-900/50 rounded-xl border border-zinc-100 dark:border-zinc-800/50">
+            <button
+              type="button"
+              onClick={() => window.location.assign("/api/auth/handoff")}
+              className="flex items-center gap-3 px-3 py-2 text-left bg-zinc-50 dark:bg-zinc-900/50 rounded-xl border border-zinc-100 dark:border-zinc-800/50 hover:border-blue-300 dark:hover:border-blue-500/40 transition-colors"
+            >
               <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-500/20 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0">
                 <User size={16} />
               </div>
@@ -115,7 +119,7 @@ export function Sidebar({ state, setters, theme, toggleTheme }: any) {
                   {userEmail}
                 </span>
               </div>
-            </div>
+            </button>
           )}
 
           <div className="flex justify-between items-center gap-4">

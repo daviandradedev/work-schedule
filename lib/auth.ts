@@ -1,30 +1,39 @@
 import { betterAuth } from "better-auth";
-import { pool } from "@/lib/db";
+import { bearer, oneTimeToken } from "better-auth/plugins";
+import { Pool } from "pg";
+import { appBaseUrlForHost, authHubUrlForHost } from "@/lib/auth-public";
 
-function toHttpsOrigin(host?: string) {
-  if (!host) return undefined;
-  const trimmedHost = host.trim();
-  if (!trimmedHost) return undefined;
-  return trimmedHost.startsWith("http") ? trimmedHost : `https://${trimmedHost}`;
+function parseOrigins(value: string | undefined) {
+  return (value ?? "")
+    .split(",")
+    .map((origin) => origin.trim())
+    .filter(Boolean);
 }
 
-const trustedOrigins = [
-  process.env.BETTER_AUTH_URL,
-  toHttpsOrigin(process.env.VERCEL_URL),
-  toHttpsOrigin(process.env.VERCEL_BRANCH_URL),
-  toHttpsOrigin(process.env.VERCEL_PROJECT_PRODUCTION_URL),
-  ...(process.env.BETTER_AUTH_TRUSTED_ORIGINS?.split(",") ?? []),
-]
-  .map((origin) => origin?.trim())
-  .filter((origin): origin is string => Boolean(origin));
-
 const cookieDomain = process.env.BETTER_AUTH_COOKIE_DOMAIN?.trim();
+const appUrl = appBaseUrlForHost();
+const authHubUrl = authHubUrlForHost();
+
+const globalForAuth = globalThis as typeof globalThis & {
+  workScheduleAuthPool?: Pool;
+};
+
+const authPool =
+  globalForAuth.workScheduleAuthPool ??
+  new Pool({
+    connectionString: process.env.AUTH_DATABASE_URL,
+    max: 5,
+  });
+
+if (process.env.NODE_ENV !== "production") {
+  globalForAuth.workScheduleAuthPool = authPool;
+}
 
 export const auth = betterAuth({
-  database: pool,
+  database: authPool,
   secret: process.env.BETTER_AUTH_SECRET,
-  baseURL: process.env.BETTER_AUTH_URL,
-  trustedOrigins,
+  baseURL: appUrl,
+  trustedOrigins: [authHubUrl, appUrl, ...parseOrigins(process.env.BETTER_AUTH_TRUSTED_ORIGINS)],
   advanced: cookieDomain
     ? {
         crossSubDomainCookies: {
@@ -33,10 +42,13 @@ export const auth = betterAuth({
         },
       }
     : undefined,
+  session: {
+    expiresIn: 60 * 60 * 24 * 30,
+    updateAge: 60 * 60 * 24,
+  },
   emailAndPassword: {
     enabled: true,
-    autoSignIn: false,
-    minPasswordLength: 8,
-    maxPasswordLength: 128,
+    disableSignUp: true,
   },
+  plugins: [bearer(), oneTimeToken()],
 });
