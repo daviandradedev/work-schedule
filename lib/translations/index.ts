@@ -91,8 +91,14 @@ export const translations = {
         },
         auth: {
             welcome: "Bem-vindo",
-            signInSubtitle: "Entre com sua conta daviandrade.dev para gerenciar suas escalas de trabalho.",
+            signInSubtitle: "Entre com sua conta daviandrade.dev para guardar suas escalas.",
             signInButton: "Entrar ou criar conta",
+        },
+        guest: {
+            eyebrow: "Sem conta",
+            title: "Veja o gerador, cadastre com uma conta",
+            continue: "Continuar neste separador",
+            body: "Sem conta você vê o gerador. Equipes, funcionários e datas só ficam gravados depois que você entra ou cria uma conta no daviandrade.dev.",
         },
         footer: {
             credit: "Desenvolvido com 🥤 e código por Davi Andrade ©"
@@ -188,8 +194,14 @@ export const translations = {
         },
         auth: {
             welcome: "Welcome",
-            signInSubtitle: "Sign in with your daviandrade.dev account to manage your work schedules.",
+            signInSubtitle: "Sign in with your daviandrade.dev account to keep your schedules.",
             signInButton: "Sign in or create an account",
+        },
+        guest: {
+            eyebrow: "No account",
+            title: "See the generator, register with an account",
+            continue: "Continue in this tab",
+            body: "Without an account you can see the generator. Teams, employees, and dates are saved only after you sign in or create a daviandrade.dev account.",
         },
         footer: {
             credit: "Crafted with 🥤 and code by Davi Andrade ©"

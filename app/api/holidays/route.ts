@@ -1,6 +1,6 @@
 import { db, assertDatabaseConfigured } from "@/lib/db";
 import { holidays } from "@/lib/db/schema";
-import { getCurrentUser } from "@/lib/api/auth";
+import { isUnauthorizedError, requireUserId } from "@/lib/session-user";
 import { asString, jsonError, readJson, toPublicHoliday } from "@/lib/api/http";
 
 export const runtime = "nodejs";
@@ -11,8 +11,13 @@ const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
 export async function POST(request: Request) {
   assertDatabaseConfigured();
 
-  const user = await getCurrentUser(request);
-  if (!user) return jsonError("Unauthorized", 401);
+  let userId: string;
+  try {
+    userId = await requireUserId();
+  } catch (error) {
+    if (isUnauthorizedError(error)) return jsonError("Sign in to save changes", 401);
+    throw error;
+  }
 
   const body = await readJson(request);
   const name = asString(body.name);
@@ -31,7 +36,7 @@ export async function POST(request: Request) {
       date,
       tag,
       isNacional: false,
-      userId: user.id,
+      userId: userId,
     })
     .returning();
 

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Settings, Sun, Moon, CalendarDays, LogOut, User } from "lucide-react";
+import { Settings, Sun, Moon, CalendarDays, LogOut, LogIn, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { AnimatePresence, motion } from "framer-motion";
 import { useLanguage } from "@/lib/contexts/language-context";
@@ -8,6 +8,7 @@ import { HolidaysTab } from "./holidays-tab";
 import { ConfigTab } from "./config-tab";
 import { useEscapeKey } from "@/lib/hooks/use-escape-key";
 import { authClient } from "@/lib/auth-client";
+import { redirectToAuthLogin } from "@/lib/login-redirect";
 
 export function Sidebar({ state, setters, theme, toggleTheme }: any) {
   const { language, setLanguage, t } = useLanguage();
@@ -169,11 +170,11 @@ export function Sidebar({ state, setters, theme, toggleTheme }: any) {
           </div>
 
           <button
-            onClick={handleLogout}
-            className="flex items-center justify-center gap-2 w-full h-10 rounded-xl bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-500/20 transition-colors text-xs font-bold uppercase tracking-widest mt-1"
+            onClick={session ? handleLogout : redirectToAuthLogin}
+            className="flex items-center justify-center gap-2 w-full h-10 rounded-xl bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-500/20 transition-colors text-xs font-bold uppercase tracking-widest mt-1"
           >
-            <LogOut size={16} />
-            {t('sidebar.logout')}
+            {session ? <LogOut size={16} /> : <LogIn size={16} />}
+            {session ? t('sidebar.logout') : t('auth.signInButton')}
           </button>
         </div>
       </div>

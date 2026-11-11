@@ -1,7 +1,7 @@
 import { and, eq } from "drizzle-orm";
 import { db, assertDatabaseConfigured } from "@/lib/db";
 import { holidays } from "@/lib/db/schema";
-import { getCurrentUser } from "@/lib/api/auth";
+import { isUnauthorizedError, requireUserId } from "@/lib/session-user";
 import { asString, jsonError, readJson, toPublicHoliday } from "@/lib/api/http";
 
 export const runtime = "nodejs";
@@ -16,8 +16,13 @@ type RouteContext = {
 export async function PATCH(request: Request, context: RouteContext) {
   assertDatabaseConfigured();
 
-  const user = await getCurrentUser(request);
-  if (!user) return jsonError("Unauthorized", 401);
+  let userId: string;
+  try {
+    userId = await requireUserId();
+  } catch (error) {
+    if (isUnauthorizedError(error)) return jsonError("Sign in to save changes", 401);
+    throw error;
+  }
 
   const { id } = await context.params;
   const body = await readJson(request);
@@ -32,7 +37,7 @@ export async function PATCH(request: Request, context: RouteContext) {
   const [updated] = await db
     .update(holidays)
     .set({ name, date, tag, updatedAt: new Date() })
-    .where(and(eq(holidays.id, id), eq(holidays.userId, user.id)))
+    .where(and(eq(holidays.id, id), eq(holidays.userId, userId)))
     .returning();
 
   if (!updated) return jsonError("Holiday not found", 404);
@@ -40,17 +45,22 @@ export async function PATCH(request: Request, context: RouteContext) {
   return Response.json(toPublicHoliday(updated));
 }
 
-export async function DELETE(request: Request, context: RouteContext) {
+export async function DELETE(_request: Request, context: RouteContext) {
   assertDatabaseConfigured();
 
-  const user = await getCurrentUser(request);
-  if (!user) return jsonError("Unauthorized", 401);
+  let userId: string;
+  try {
+    userId = await requireUserId();
+  } catch (error) {
+    if (isUnauthorizedError(error)) return jsonError("Sign in to save changes", 401);
+    throw error;
+  }
 
   const { id } = await context.params;
 
   const [deleted] = await db
     .delete(holidays)
-    .where(and(eq(holidays.id, id), eq(holidays.userId, user.id)))
+    .where(and(eq(holidays.id, id), eq(holidays.userId, userId)))
     .returning({ id: holidays.id });
 
   if (!deleted) return jsonError("Holiday not found", 404);

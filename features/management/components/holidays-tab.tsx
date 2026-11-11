@@ -5,6 +5,7 @@ import { useLanguage } from "@/lib/contexts/language-context";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { createHoliday, deleteHoliday, updateHoliday } from "@/lib/api/client";
+import { redirectToAuthLogin } from "@/lib/login-redirect";
 import { Holiday } from "@/lib/types/types";
 
 export function HolidaysTab({ state, setters }: any) {
@@ -38,6 +39,11 @@ export function HolidaysTab({ state, setters }: any) {
         const defaultTag = t('calendar.holiday');
         const finalTag = newHolTag.trim() ? newHolTag.trim().toUpperCase() : defaultTag;
 
+        if (!state.signedIn) {
+            redirectToAuthLogin();
+            return;
+        }
+
         try {
             const newHol = await createHoliday({
                 name: newHolName,
@@ -52,18 +58,24 @@ export function HolidaysTab({ state, setters }: any) {
             setNewHolTag("");
             setAddErrors({ name: false, date: false });
         } catch (error) {
-            console.error("ERRO DA API:", error);
+            console.error("Failed to create holiday", error);
             toast.error(t('messages.cloudError'), { position: 'top-left' });
         }
     };
 
     const removeItem = async (id: string) => {
-        setters.setHolidays(state.holidays.filter((h: any) => h.id !== id));
-        setters.setCustomHolidays?.((state.customHolidays || []).filter((h: Holiday) => h.id !== id));
+        if (!state.signedIn) {
+            redirectToAuthLogin();
+            return;
+        }
+        const national = state.holidays.filter((holiday: Holiday) => holiday.isNacional);
+        const custom = (state.customHolidays || []).filter((holiday: Holiday) => holiday.id !== id);
+        setters.setCustomHolidays?.(custom);
+        setters.setHolidays([...national, ...custom]);
         try {
             await deleteHoliday(id);
         } catch (error) {
-            console.error(error);
+            console.error("Failed to delete holiday", error);
             toast.error(t('messages.deleteError'), { position: 'top-left' });
         }
     };
@@ -102,20 +114,24 @@ export function HolidaysTab({ state, setters }: any) {
         const finalTag = editHolTag.trim() ? editHolTag.trim().toUpperCase() : defaultTag;
 
         const updatedData = { name: editHolName, date: editHolDate, tag: finalTag };
-
-        setters.setHolidays(state.holidays.map((h: any) =>
-            h.id === id ? { ...h, ...updatedData } : h
-        ));
-
+        if (!state.signedIn) {
+            redirectToAuthLogin();
+            return;
+        }
+        const custom = (state.customHolidays || []).map((holiday: Holiday) =>
+            holiday.id === id ? { ...holiday, ...updatedData } : holiday,
+        );
+        setters.setCustomHolidays?.(custom);
+        setters.setHolidays([
+            ...state.holidays.filter((holiday: Holiday) => holiday.isNacional),
+            ...custom,
+        ]);
         setEditingId(null);
 
         try {
             await updateHoliday(id, updatedData);
-            setters.setCustomHolidays?.((state.customHolidays || []).map((h: Holiday) =>
-                h.id === id ? { ...h, ...updatedData } : h
-            ));
         } catch (error) {
-            console.error(error);
+            console.error("Failed to update holiday", error);
             toast.error(t('messages.cloudError'), { position: 'top-left' });
         }
     };

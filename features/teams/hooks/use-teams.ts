@@ -9,12 +9,19 @@ import {
     updateEmployee as updateEmployeeRequest,
     updateGroup as updateGroupRequest,
 } from "@/lib/api/client";
+import { redirectToAuthLogin } from "@/lib/login-redirect";
 
 export function useTeams(state: any, setters: any) {
     const { t } = useLanguage();
+    const signedIn = state?.signedIn === true;
 
     const addGroup = async (name: string, color: string = "#3b82f6") => {
         if (!name.trim()) return toast.error(t('messages.enterTeamName') || 'Informe o nome da equipe');
+
+        if (!signedIn) {
+            redirectToAuthLogin();
+            return;
+        }
 
         try {
             const newGroup = await createGroup({ name, color });
@@ -26,24 +33,33 @@ export function useTeams(state: any, setters: any) {
             }
             toast.success(t('messages.teamCreated') || 'Equipe criada');
         } catch (error) {
-            console.error(error);
+            console.error("Failed to create team", error);
             toast.error(t('messages.cloudError') || 'Erro na nuvem');
         }
     };
 
     const updateGroup = async (id: string, name: string, color: string) => {
         if (!name.trim() || !color) return;
+        if (!signedIn) {
+            redirectToAuthLogin();
+            return;
+        }
 
         setters.setGroups(state.groups.map((g: Group) => g.id === id ? { ...g, name, color } : g));
         try {
             await updateGroupRequest(id, { name, color });
         } catch (error) {
-            console.error(error);
+            console.error("Failed to update team", error);
             toast.error(t('messages.cloudError') || 'Erro na nuvem');
         }
     };
 
     const removeGroup = async (id: string) => {
+        if (!signedIn) {
+            redirectToAuthLogin();
+            return;
+        }
+
         const updatedGroups = state.groups.filter((g: Group) => g.id !== id);
         setters.setGroups(updatedGroups);
 
@@ -54,7 +70,7 @@ export function useTeams(state: any, setters: any) {
         try {
             await deleteGroup(id);
         } catch (error) {
-            console.error(error);
+            console.error("Failed to delete team", error);
             toast.error(t('messages.deleteError') || 'Erro ao deletar');
         }
     };
@@ -62,18 +78,27 @@ export function useTeams(state: any, setters: any) {
     const addEmployee = async (name: string, groupId: string) => {
         if (!name.trim() || !groupId) return toast.error(t('messages.nameAndTeamReq') || 'Nome e equipe são obrigatórios');
 
+        if (!signedIn) {
+            redirectToAuthLogin();
+            return;
+        }
+
         try {
             const newEmp = await createEmployee({ name, groupId });
             setters.setEmployees([...state.employees, newEmp]);
             toast.success(t('messages.empAdded') || 'Funcionário adicionado');
         } catch (error) {
-            console.error(error);
+            console.error("Failed to create employee", error);
             toast.error(t('messages.cloudError') || 'Erro na nuvem');
         }
     };
 
     const updateEmployee = async (id: string, newName: string, newGroupId: string) => {
         if (!newName.trim() || !newGroupId) return;
+        if (!signedIn) {
+            redirectToAuthLogin();
+            return;
+        }
 
         setters.setEmployees(state.employees.map((e: Employee) =>
             e.id === id ? { ...e, name: newName, groupId: newGroupId } : e
@@ -82,17 +107,22 @@ export function useTeams(state: any, setters: any) {
         try {
             await updateEmployeeRequest(id, { name: newName, groupId: newGroupId });
         } catch (error) {
-            console.error(error);
+            console.error("Failed to update employee", error);
             toast.error(t('messages.cloudError') || 'Erro na nuvem');
         }
     };
 
     const removeEmployee = async (id: string) => {
+        if (!signedIn) {
+            redirectToAuthLogin();
+            return;
+        }
+
         setters.setEmployees(state.employees.filter((e: Employee) => e.id !== id));
         try {
             await deleteEmployee(id);
         } catch (error) {
-            console.error(error);
+            console.error("Failed to delete employee", error);
             toast.error(t('messages.deleteError') || 'Erro ao deletar');
         }
     };

@@ -1,7 +1,7 @@
 import { eq } from "drizzle-orm";
 import { db, assertDatabaseConfigured } from "@/lib/db";
 import { groups } from "@/lib/db/schema";
-import { getCurrentUser } from "@/lib/api/auth";
+import { isUnauthorizedError, requireUserId } from "@/lib/session-user";
 import { asString, jsonError, readJson, toPublicGroup } from "@/lib/api/http";
 
 export const runtime = "nodejs";
@@ -10,8 +10,13 @@ export const dynamic = "force-dynamic";
 export async function POST(request: Request) {
   assertDatabaseConfigured();
 
-  const user = await getCurrentUser(request);
-  if (!user) return jsonError("Unauthorized", 401);
+  let userId: string;
+  try {
+    userId = await requireUserId();
+  } catch (error) {
+    if (isUnauthorizedError(error)) return jsonError("Sign in to save changes", 401);
+    throw error;
+  }
 
   const body = await readJson(request);
   const name = asString(body.name);
@@ -27,19 +32,24 @@ export async function POST(request: Request) {
       id: crypto.randomUUID(),
       name,
       color,
-      userId: user.id,
+      userId: userId,
     })
     .returning();
 
   return Response.json(toPublicGroup(created), { status: 201 });
 }
 
-export async function GET(request: Request) {
+export async function GET() {
   assertDatabaseConfigured();
 
-  const user = await getCurrentUser(request);
-  if (!user) return jsonError("Unauthorized", 401);
+  let userId: string;
+  try {
+    userId = await requireUserId();
+  } catch (error) {
+    if (isUnauthorizedError(error)) return jsonError("Sign in to save changes", 401);
+    throw error;
+  }
 
-  const rows = await db.select().from(groups).where(eq(groups.userId, user.id));
+  const rows = await db.select().from(groups).where(eq(groups.userId, userId));
   return Response.json(rows.map(toPublicGroup));
 }

@@ -1,16 +1,18 @@
-import { CalendarIcon, Play, Sun, Moon, LogOut } from "lucide-react";
+import { CalendarIcon, Play, Sun, Moon, LogOut, LogIn } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/lib/contexts/language-context";
 import { cn } from "@/lib/utils";
 import { authClient } from "@/lib/auth-client";
+import { redirectToAuthLogin } from "@/lib/login-redirect";
 
 interface WelcomeScreenProps {
     setIsWizardOpen: (val: boolean) => void;
     theme?: string;
     toggleTheme?: () => void;
+    signedIn?: boolean;
 }
 
-export function WelcomeScreen({ setIsWizardOpen, theme, toggleTheme }: WelcomeScreenProps) {
+export function WelcomeScreen({ setIsWizardOpen, theme, toggleTheme, signedIn = false }: WelcomeScreenProps) {
     const { language, setLanguage, t } = useLanguage();
 
     const handleLogout = async () => {
@@ -27,11 +29,11 @@ export function WelcomeScreen({ setIsWizardOpen, theme, toggleTheme }: WelcomeSc
         <>
             <div className="absolute top-6 right-6 z-20 flex items-center gap-2">
                 <button
-                    onClick={handleLogout}
-                    title={t("sidebar.logout")}
-                    className="relative flex items-center justify-center w-8 h-8 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-full cursor-pointer transition-colors shrink-0 shadow-sm text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30"
+                    onClick={signedIn ? handleLogout : redirectToAuthLogin}
+                    title={signedIn ? t("sidebar.logout") : t("auth.signInButton")}
+                    className="relative flex items-center justify-center w-8 h-8 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-full cursor-pointer transition-colors shrink-0 shadow-sm text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-950/30"
                 >
-                    <LogOut size={14} />
+                    {signedIn ? <LogOut size={14} /> : <LogIn size={14} />}
                 </button>
                 <button
                     onClick={() => setLanguage(language === 'pt' ? 'en' : 'pt')}
@@ -66,7 +68,7 @@ export function WelcomeScreen({ setIsWizardOpen, theme, toggleTheme }: WelcomeSc
                 <p className="text-zinc-500 dark:text-zinc-400 mt-2">
                     {t('welcome.subtitle')}
                 </p>
-                <Button onClick={() => setIsWizardOpen(true)} className="w-full text-sm uppercase tracking-widest font-black py-6">
+                <Button onClick={() => (signedIn ? setIsWizardOpen(true) : redirectToAuthLogin())} className="w-full text-sm uppercase tracking-widest font-black py-6">
                     <Play size={16} className="mr-2" /> {t('welcome.start')}
                 </Button>
             </div>

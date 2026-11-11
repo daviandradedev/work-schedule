@@ -1,4 +1,5 @@
 import { Employee, Group, Holiday } from "@/lib/types/types";
+import { saveWasRejected } from "@/lib/login-redirect";
 
 type JsonBody = Record<string, unknown>;
 
@@ -10,6 +11,10 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
       ...(options.headers ?? {}),
     },
   });
+
+  if (saveWasRejected(response)) {
+    throw new Error("Unauthorized");
+  }
 
   if (!response.ok) {
     const payload = await response.json().catch(() => ({}));
