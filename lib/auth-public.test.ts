@@ -18,8 +18,8 @@ describe("public urls", () => {
     vi.stubEnv("NEXT_PUBLIC_APP_URL", "http://localhost:3000");
     vi.stubEnv("NEXT_PUBLIC_AUTH_URL", "http://localhost:3100");
 
-    expect(appBaseUrlForHost("workschedule-dd.vercel.app")).toBe("https://workschedule-dd.vercel.app");
-    expect(authHubUrlForHost("workschedule-dd.vercel.app")).toBe("https://auth.daviandrade.dev");
+    expect(appBaseUrlForHost("work-schedule.daviandrade.dev")).toBe("https://work-schedule.daviandrade.dev");
+    expect(authHubUrlForHost("work-schedule.daviandrade.dev")).toBe("https://auth.daviandrade.dev");
   });
 
   it("uses the production urls on Vercel when the public urls are missing", () => {
@@ -27,7 +27,7 @@ describe("public urls", () => {
     vi.stubEnv("NEXT_PUBLIC_AUTH_URL", "");
     vi.stubEnv("VERCEL_ENV", "production");
 
-    expect(appBaseUrlForHost(null)).toBe("https://workschedule-dd.vercel.app");
+    expect(appBaseUrlForHost(null)).toBe("https://work-schedule.daviandrade.dev");
     expect(authHubUrlForHost(null)).toBe("https://auth.daviandrade.dev");
   });
 });

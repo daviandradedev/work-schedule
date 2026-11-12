@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Settings, Sun, Moon, CalendarDays, LogOut, LogIn, User } from "lucide-react";
+import { Settings, Sun, Moon, CalendarDays, LogOut, LogIn } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { AnimatePresence, motion } from "framer-motion";
 import { useLanguage } from "@/lib/contexts/language-context";
@@ -10,12 +10,21 @@ import { useEscapeKey } from "@/lib/hooks/use-escape-key";
 import { authClient } from "@/lib/auth-client";
 import { redirectToAuthLogin } from "@/lib/login-redirect";
 
+function accountInitials(label: string) {
+  const parts = label.trim().split(/\s+/).filter(Boolean);
+  if (parts.length === 0) return "?";
+  if (parts.length === 1) return parts[0]!.slice(0, 2).toUpperCase();
+  return `${parts[0]!.charAt(0)}${parts[1]!.charAt(0)}`.toUpperCase();
+}
+
 export function Sidebar({ state, setters, theme, toggleTheme }: any) {
   const { language, setLanguage, t } = useLanguage();
   const [activeTab, setActiveTab] = useState<"main" | "holidays">("main");
   const [isOpen, setIsOpen] = useState(false);
   const { data: session } = authClient.useSession();
-  const userEmail = session?.user.email ?? null;
+  const user = session?.user;
+  const userEmail = user?.email ?? null;
+  const userLabel = user?.name?.trim() || userEmail;
 
   useEscapeKey(() => setIsOpen(false), isOpen);
 
@@ -109,15 +118,19 @@ export function Sidebar({ state, setters, theme, toggleTheme }: any) {
               onClick={() => window.location.assign("/api/auth/handoff")}
               className="flex items-center gap-3 px-3 py-2 text-left bg-zinc-50 dark:bg-zinc-900/50 rounded-xl border border-zinc-100 dark:border-zinc-800/50 hover:border-blue-300 dark:hover:border-blue-500/40 transition-colors"
             >
-              <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-500/20 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0">
-                <User size={16} />
+              <div className="w-8 h-8 overflow-hidden rounded-full bg-blue-100 dark:bg-blue-500/20 text-[11px] font-bold text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0">
+                {user?.image ? (
+                  <img src={user.image} alt="" className="h-full w-full object-cover" />
+                ) : (
+                  accountInitials(userLabel ?? "")
+                )}
               </div>
               <div className="flex flex-col overflow-hidden">
                 <span className="text-[9px] font-black text-zinc-400 uppercase tracking-widest">
                   {t('sidebar.loggedInAs')}
                 </span>
-                <span className="text-xs font-bold text-zinc-700 dark:text-zinc-300 truncate" title={userEmail}>
-                  {userEmail}
+                <span className="text-xs font-bold text-zinc-700 dark:text-zinc-300 truncate" title={userEmail ?? undefined}>
+                  {userLabel}
                 </span>
               </div>
             </button>

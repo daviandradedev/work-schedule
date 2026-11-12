@@ -3,7 +3,7 @@
 
   <h1>Work Schedule Generator</h1>
 
-  [![Vercel](https://img.shields.io/badge/Live_Demo-Vercel-black?style=for-the-badge&logo=vercel)](https://workschedule-dd.vercel.app/)
+  [![Live](https://img.shields.io/badge/Live-daviandrade.dev-black?style=for-the-badge)](https://work-schedule.daviandrade.dev/)
   
   <p>
     A modern web app for generating and managing workforce schedules with automated rotation logic.
@@ -93,9 +93,12 @@ pnpm install
 
 # .env.local
 DATABASE_URL="postgresql://USER:PASSWORD@HOST.neon.tech/DB?sslmode=require"
-BETTER_AUTH_SECRET="generate-with-openssl-rand-base64-32"
-BETTER_AUTH_URL="http://localhost:3000"
-BETTER_AUTH_TRUSTED_ORIGINS="https://your-vercel-domain.vercel.app"
+AUTH_DATABASE_URL="postgresql://USER:PASSWORD@HOST-pooler.neon.tech/neondb?sslmode=require"
+BETTER_AUTH_SECRET="same-secret-as-the-auth-hub"
+BETTER_AUTH_TRUSTED_ORIGINS="http://localhost:3100,http://localhost:3000,https://auth.daviandrade.dev,https://work-schedule.daviandrade.dev"
+BETTER_AUTH_COOKIE_DOMAIN=
+NEXT_PUBLIC_APP_URL="http://localhost:3000"
+NEXT_PUBLIC_AUTH_URL="https://auth.daviandrade.dev"
 
 pnpm db:migrate
 
@@ -104,12 +107,12 @@ pnpm dev
 
 ## 🧭 Production Architecture
 
-This app uses app-owned authentication and server-side APIs backed by PostgreSQL.
+Schedules stay in this app. Accounts live in the daviandrade.dev auth hub.
 
 - **Database:** Neon PostgreSQL. Work Schedule data lives in a dedicated `work_schedule` schema and can be exported with `pg_dump`.
-- **Auth:** Better Auth runs inside this Next.js app and stores users/sessions in the same PostgreSQL database.
-- **API boundary:** All writes go through Next.js server route handlers, protected by HTTP-only session cookies.
-- **Deploy target:** Vercel is the simplest fit for the current Next.js app. A separate Hono/Cloudflare API can be extracted later if mobile/native clients become the priority.
+- **Auth:** Better Auth reads the hub database (`AUTH_DATABASE_URL`) with the hub secret. The user id is the normalized email. The site opens without a session; saving a team, employee, or date requires the hub login.
+- **API boundary:** Writes go through Next.js route handlers and require that hub session.
+- **Deploy target:** `https://work-schedule.daviandrade.dev`. Set `NEXT_PUBLIC_APP_URL` to that origin and leave `BETTER_AUTH_COOKIE_DOMAIN` empty unless the host is `*.daviandrade.dev`, in which case it is `.daviandrade.dev`.
 
 ---
 
@@ -144,7 +147,7 @@ O projeto foca em **performance, acessibilidade e usabilidade real**, oferecendo
   Alternância de tema com `next-themes` e Tailwind.
 
 - **Persistência portável em nuvem**  
-  Armazenamento em PostgreSQL com autenticação própria e dados fáceis de exportar.
+  Escalas em PostgreSQL. A conta fica no hub daviandrade.dev e o id do usuário é o e-mail.
 
 ---
 
@@ -166,9 +169,12 @@ pnpm install
 
 # .env.local
 DATABASE_URL="postgresql://USER:PASSWORD@HOST.neon.tech/DB?sslmode=require"
-BETTER_AUTH_SECRET="generate-with-openssl-rand-base64-32"
-BETTER_AUTH_URL="http://localhost:3000"
-BETTER_AUTH_TRUSTED_ORIGINS="https://your-vercel-domain.vercel.app"
+AUTH_DATABASE_URL="postgresql://USER:PASSWORD@HOST-pooler.neon.tech/neondb?sslmode=require"
+BETTER_AUTH_SECRET="same-secret-as-the-auth-hub"
+BETTER_AUTH_TRUSTED_ORIGINS="http://localhost:3100,http://localhost:3000,https://auth.daviandrade.dev,https://work-schedule.daviandrade.dev"
+BETTER_AUTH_COOKIE_DOMAIN=
+NEXT_PUBLIC_APP_URL="http://localhost:3000"
+NEXT_PUBLIC_AUTH_URL="https://auth.daviandrade.dev"
 
 pnpm db:migrate
 

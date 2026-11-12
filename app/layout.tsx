@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { cookies } from "next/headers";
 import "./globals.css";
-import { ThemeProvider } from "next-themes";
 import { Toaster } from "sonner";
 import { LanguageProvider } from "@/lib/contexts/language-context";
+import { ThemeProvider } from "@/lib/contexts/theme-context";
+import { readLanguageCookie, readThemeCookie } from "@/lib/preferences";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -13,6 +15,7 @@ const geistSans = Geist({
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
+  preload: false,
 });
 
 export const metadata: Metadata = {
@@ -20,12 +23,21 @@ export const metadata: Metadata = {
   description: "Crie, gerencie e exporte escalas de trabalho mensais facilmente.",
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const cookieStore = await cookies();
+  const theme = readThemeCookie(cookieStore.get("theme")?.value);
+  const language = readLanguageCookie(cookieStore.get("language")?.value);
+
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html
+      lang={language === "en" ? "en" : "pt-BR"}
+      className={`${geistSans.variable} ${geistMono.variable}${theme === "light" ? "" : " dark"}`}
+      style={{ colorScheme: theme === "light" ? "light" : "dark" }}
+      suppressHydrationWarning
+    >
       <body>
-        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-          <LanguageProvider>
+        <ThemeProvider initialTheme={theme}>
+          <LanguageProvider initialLanguage={language}>
             {children}
             <Toaster position="top-right" richColors />
           </LanguageProvider>
