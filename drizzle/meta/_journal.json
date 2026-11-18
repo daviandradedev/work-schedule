@@ -1,0 +1,34 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1778713585886,
+      "tag": "0000_initial_auth_and_schedule",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1793929873805,
+      "tag": "0001_hub_user_ids",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1794000000000,
+      "tag": "0002_email_user_ids",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1794505738140,
+      "tag": "0004_drop_local_auth",
+      "breakpoints": true
+    }
+  ]
+}
