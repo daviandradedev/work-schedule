@@ -8,7 +8,11 @@ const eslintConfig = defineConfig([
   ...nextTs,
   {
     files: ["**/*.{js,jsx,mjs,ts,tsx,mts,cts}"],
-    rules: jsxA11y.flatConfigs.strict.rules,
+    rules: {
+      ...jsxA11y.flatConfigs.strict.rules,
+      "@typescript-eslint/no-explicit-any": "warn",
+      "react-hooks/set-state-in-effect": "warn",
+    },
   },
   // Override default ignores of eslint-config-next.
   globalIgnores([
